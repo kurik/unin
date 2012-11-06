@@ -1,0 +1,19 @@
+#!/bin/bash
+
+TEMP_SENSORS_PATH="/sys/bus/w1/devices"
+TEMP_SENSORS="28-000001b4337c  28-000001b43eba  28-000001b4754f"
+#REPORT="/home/temp/report"
+REPORT="/tmp/report"
+
+SAMPLES_PER_RUN=10
+
+for i in $(seq 1 ${SAMPLES_PER_RUN}); do
+	for sensor in ${TEMP_SENSORS}; do
+		l_out_file="${REPORT}"."${sensor}"
+		l_sensor_path="${TEMP_SENSORS_PATH}/${sensor}/w1_slave"
+		l_temp=$( ~/convert-temp < "${l_sensor_path}" | sed 's/.*t=//g' )
+		echo "${l_temp}" >> "${l_out_file}"
+		[[ ${SAMPLES_PER_RUN} -eq ${i} ]] && echo >> "${l_out_file}"
+	done
+	[[ ${SAMPLES_PER_RUN} -ne ${i} ]] && sleep 1
+done

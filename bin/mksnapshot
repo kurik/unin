@@ -1,0 +1,12 @@
+#bin/bash
+
+exit 0
+
+TEMP="/tmp"
+DEST="/home/temp"
+
+( cd "${TEMP}" && \
+  mplayer -vo jpeg tv:// -tv driver=v4l2:width=320:height=240:noaudio:device=/dev/video0 -nosound -frames 50 # 2>/dev/null 1>&2
+  cp 00000050.jpg "${DEST}/$(date +'%Y-%m-%d-%H-%M')-00000050.jpg" 2>/dev/null 1>&2
+)
+exit 0
