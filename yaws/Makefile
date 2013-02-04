@@ -6,10 +6,13 @@ EBINS:=$(patsubst %.erl,$(EBINDIR)/%.beam,$(SOURCES))
 
 ERLC=erlc
 
-all: $(EBINS)
+all: $(EBINDIR) $(EBINS)
 
 clean:
-	rm -rf $(EBINDIR)/*
+	rm -rf $(EBINDIR)
+
+$(EBINDIR):
+	mkdir $(EBINDIR)
 
 $(EBINS): $(EBINDIR)/%.beam: $(SRCDIR)/%.erl
 	$(ERLC) -o $(EBINDIR) $<
