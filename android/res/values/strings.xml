@@ -1,9 +1,0 @@
-<resources>
-
-    <string name="app_name">Unin</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="menu_settings">Settings</string>
-    <string name="title_activity_temper">Unin Temperature</string>
-    <string name="Vnitrni">Button</string>
-
-</resources>
