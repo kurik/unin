@@ -1,11 +1,5 @@
 # w1_therm python module
 
-# This module should be used as a MODULE, not as a script
-if __name__ == "__main__":
-	from sys import exit
-	print "This is a module, not a script. Sorry. Exiting..."
-	exit(0)
-
 # The place, used by w1_therm module for communication with user space
 w1_sys_bus = '/sys/bus/w1/devices'
 
@@ -40,7 +34,7 @@ class Therms:
 	def __iter__(self):
 		return self
 
-	def next(self):
+	def __next__(self):
 		if self.therm_list == []:
 			self.list()
 		if len(self.therm_list) <= self.index:
@@ -57,3 +51,7 @@ class Therms:
 				self.therm_list.append(d)
 		return self.therm_list
 
+
+if __name__ == "__main__":
+	for t in Therms():
+		print(t.getDegrees())
