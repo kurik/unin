@@ -15,4 +15,4 @@ class Module:
 
 		def start(self, queues):
 				self.queues = queues
-				self.m.main(queues)
+				self.m.main(queues, self.config)
