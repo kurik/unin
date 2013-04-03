@@ -1,3 +1,10 @@
 class Module:
 		def __init__(self, name, config):
-				print('Module name: ', name)
+				self.name = name
+				self.config = config
+				self.process = None
+				print('Module name:', name, 'created')
+
+		def start(self, queues):
+				self.queues = queues
+				print('Module', self.name, 'running')
