@@ -1,13 +1,13 @@
 import json
-import modules
+import workers
 
 # Open the config file
 fcfg = open('unin.cfg')
 cfg = json.load(fcfg)
 
 # Start modules
-ms = modules.Modules(cfg['modules'])
+ws = workers.Workers(cfg['workers'])
 
 # Run the loop
-for m in ms:
-		m.process.start()
+for w in ws:
+		w.process.start()
