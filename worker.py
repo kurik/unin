@@ -2,9 +2,10 @@ import os, sys, inspect
 import importlib
 
 class Worker:
-		def __init__(self, name, config):
+		def __init__(self, name, config, hubs):
 				self.name = name
 				self.config = config
+				self.hubs = hubs
 				self.process = None
 				# Make sure the directory of workers is in our modules' path
 				cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"workers")))
@@ -13,6 +14,5 @@ class Worker:
 				# Import the module
 				self.m = importlib.import_module(name)
 
-		def start(self, queues):
-				self.queues = queues
-				self.m.main(queues, self.config)
+		def start(self):
+				self.m.main(self.config, self.hubs)

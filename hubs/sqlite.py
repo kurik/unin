@@ -1,4 +1,4 @@
 import os
 
-def main(queues, config):
-		print('Inside the module', __name__, ':: PID = ', os.getpid(), ' :: Config =', config)
+def main(config):
+		print('Inside the HUB', __name__, ':: PID = ', os.getpid(), ' :: Config =', config)

@@ -1,24 +1,24 @@
-import worker
+import hub
 from multiprocessing import Process
 
-class Workers:
-	def __init__(self, config, hubs):
-		self.workers = []
+class Hubs:
+	def __init__(self, config):
+		self.hubs = []
 		self.index = 0
 		for m in config:
-				mobj = worker.Worker(m['name'], m['config'], hubs)
+				mobj = hub.Hub(m['name'], m['config'])
 				queues = None # TODO
 				mobj.process = Process(target = mobj.start)
-				self.workers.append(mobj)
+				self.hubs.append(mobj)
 
 	def __iter__(self):
 		return self
 
 	def __next__(self):
-		if len(self.workers) <= self.index:
+		if len(self.hubs) <= self.index:
 			raise StopIteration
 		else:
-			result = self.workers[self.index]
+			result = self.hubs[self.index]
 			self.index += 1
 		return result
 

@@ -1,4 +1,6 @@
 import os
 
-def main(queues, config):
-		print('Inside the module', __name__, ':: PID = ', os.getpid(), ' :: Config =', config)
+def main(config, hubs):
+		print('Inside the worker', __name__, ':: PID = ', os.getpid())
+		print('  Hubs:', len(hubs.hubs))
+		print('  Config =', config)
