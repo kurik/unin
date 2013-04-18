@@ -1,5 +1,6 @@
 import redis
 from redis._compat import nativestr
+import pickle
 
 class RedisSubQ:
 		def __init__(self, queue_name, **kwargs):
@@ -16,9 +17,9 @@ class RedisSubQ:
 					while m_t != 'message':
 						self.res = self.q.parse_response()
 						m_t = nativestr(self.res[0])
-					yield nativestr(self.res[2])
+					yield pickle.loads(nativestr(self.res[2]), encoding = 'UTF-8')
 
-rpq = RedisSubQ("Test")
-for m in rpq.get():
-	print('Response:', m)
+#rpq = RedisSubQ("TERMO")
+#for m in rpq.get():
+	#print('Response:', m)
 
