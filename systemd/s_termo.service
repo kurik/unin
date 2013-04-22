@@ -1,0 +1,14 @@
+[Unit]
+Description=Termo sensor
+After=redis.service
+
+[Service]
+Type=forking
+PIDFile=/run/s_termo.pid
+#ExecStartPre=/bin/mkdir -p /var/lib/redis
+ExecStart=/usr/local/bin/s_termo.py
+ExecStop=kill $(cat /run/s_termo.pid)
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
