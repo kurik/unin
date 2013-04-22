@@ -1,5 +1,5 @@
 import redis
-from redis._compat import nativestr
+#from redis._compat import nativestr
 import pickle
 
 class RedisSubQ:
@@ -13,13 +13,17 @@ class RedisSubQ:
 		def get(self, block = True):
 				self.res = []
 				while True:
-					m_t = ''
-					while m_t != 'message':
+					m = ''
+					while m != b'message':
 						self.res = self.q.parse_response()
-						m_t = nativestr(self.res[0])
-					yield pickle.loads(nativestr(self.res[2]), encoding = 'UTF-8')
+						m = self.res[0]
+					yield pickle.loads(self.res[2])
 
-#rpq = RedisSubQ("TERMO")
-#for m in rpq.get():
-	#print('Response:', m)
+if __name__ == "__main__":
+		rpq = RedisSubQ("TERMO")
+		for m in rpq.get():
+			print('Response:')
+			print('sensor_id:', m['sensor_id'])
+			print('temperature:', m['temperature'])
+			print('time_stamp:', m['time_stamp'])
 

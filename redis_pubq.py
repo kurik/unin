@@ -9,10 +9,13 @@ class RedisPubQ:
 
 		def publish(self, message):
 			message = pickle.dumps(message)
+			#message = map(pickle.dumps, message)
 			self.r.execute_command('PUBLISH', self.qn, message)
 
-#rpq = RedisPubQ("Test")
-#rpq.publish({'sensor_id': '28-000001b4337c',
-		#'temperature': 12000,
-		#'time_stamp': time.gmtime()})
+if __name__ == "__main__":
+		import time
+		rpq = RedisPubQ("TERMO")
+		rpq.publish({'sensor_id': '28-000001b4337c',
+				'temperature': 12000,
+				'time_stamp': time.gmtime()})
 
