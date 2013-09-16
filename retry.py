@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import time
-import math
 
 # Retry decorator with exponential backoff
 def retry(tries, delay=3, backoff=2):
@@ -15,7 +14,7 @@ def retry(tries, delay=3, backoff=2):
     if backoff <= 1:
         raise ValueError("backoff must be greater than 1")
 
-    tries = math.floor(tries)
+    tries = int(tries)
     if tries < 0:
         raise ValueError("tries must be 0 or greater")
 
