@@ -25,18 +25,27 @@ def retry(tries, delay=3, backoff=2):
         def f_retry(*args, **kwargs):
             mtries, mdelay = tries, delay # make mutable
 
-            rv = f(*args, **kwargs) # first attempt
+            try:
+                result = f(*args, **kwargs) # first attempt
+                rv = True
+            except:
+                rv = False
             while mtries > 0:
                 if rv is True: # Done on success
-                    return True
+                    return result
 
                 mtries -= 1      # consume an attempt
                 time.sleep(mdelay) # wait...
                 mdelay *= backoff  # make future wait longer
 
-                rv = f(*args, **kwargs) # Try again
+                try:
+                    result = f(*args, **kwargs) # Try again
+                    rv = True
+                except:
+                    rv = False
 
-            return False # Ran out of tries :-(
+            # Ran out of tries :-(
+            raise Exception('Ran out of tries')
 
         return f_retry # true decorator -> decorated function
     return deco_retry  # @retry(arg[, ...]) -> true decorator
@@ -45,13 +54,17 @@ def retry(tries, delay=3, backoff=2):
 if __name__ == "__main__":
     @retry(3)
     def __test1():
-        print 'Test #1 - failing'
+        print('Test #1 - failing')
+        raise Exception('Function #1')
         return False
 
     @retry(3)
     def __test2():
-        print 'Test #2 - working'
-        return True
+        print('Test #2 - working')
+        return 'Some useful result'
 
-    __test1()
-    __test2()
+    try:
+        print(__test1())
+    except:
+        print('The test function has been constantly failing')
+    print(__test2())
