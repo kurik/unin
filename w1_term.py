@@ -49,16 +49,16 @@ class _Therms_Iterator():
 # Container 
 class Therms():
     def __getitem__(self, key):
-        sensor_path = w1_sys_bus + '/' + str(key)
+        sensor_path = w1_sys_bus + '/' + str(key) + '/w1_slave'
         sensor_data = ""
         if emulation:
             sensor_data = emulatedData[key]
         elif os.path.exists(sensor_path):
             try:
-                with open(sensor_path, 'rb') as sensor:
+                with open(sensor_path, 'r') as sensor:
                     sensor_data = sensor.read()
             except IOError as e:
-                raise ThermException("Error reading from sensor %s: (%s)" % (key, exc.strerror))
+                raise ThermException("Error reading from sensor %s: (%s)" % (key, e.strerror))
         else:
             raise KeyError('Sensor %s is not available' % key)
 
@@ -67,7 +67,7 @@ class Therms():
         degrees = sensor_data[-1]
         status = sensor_data[11]
         if (degrees[:2] != 't=') or (status.upper() != 'YES'):
-            raise ThermException('Temperature sensor %s reported an error' % key)
+            raise ThermException('Temperature sensor %s reported an error\nDegrees: %s\nStatus: %s' % (key, degrees, status))
         return degrees[2:]
 
     def __setitem__(self, key, value):
@@ -77,7 +77,7 @@ class Therms():
         raise AttributeError("Can not delete sensor %s" % key)
 
     def __contains__(self, key):
-        return os.path.exists(w1_sys_bus + '/' + str(key))
+        return os.path.exists(w1_sys_bus + '/' + str(key) + '/w1_slave')
 
     def __iter__(self):
         return _Therms_Iterator()
@@ -97,5 +97,5 @@ if __name__ == "__main__":
             print('Sensor %s: %s' % (t, temp))
             sys.stdout.flush()
         except Exception as e:
-            print 'Error reading sensor %s (%s)' % (t, e.strerror)
+            print('Error reading sensor %s (%s)' % (t, e.strerror))
             sys.stdout.flush()
