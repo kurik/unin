@@ -1,6 +1,0 @@
-#!/usr/bin/awk -f
-
-BEGIN {CRC=0}
-$11 ~ /crc=.*/ && $12 ~ /NO/ {CRC=0}
-$11 ~ /crc=.*/ && $12 ~ /YES/ {CRC=1}
-$10 ~ /t=.*/ {if (CRC==1) print $10}
