@@ -5,23 +5,26 @@ import retry
 import sqlite3
 import configparser
 import os
+import optparse
 
 CONFIG_FILE="~/etc/unin_temperature.conf"
 
+parser = optparse.OptionParser()
+parser.add_option("-c", "--cfgfile", dest="cfgfile", help="Config file [%s]" % CONFIG_FILE, metavar="FILE", default=CONFIG_FILE)
+parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Be verbose")
+(options, args) = parser.parse_args()
+
 # Read temperature given number of times, if needed, to minimise errors on sesors
 @retry.retry(3)
-def __read_temperature(sensors, sensor):
+def read_temperature(sensors, sensor):
     return sensors[sensor]
 
 # Parse the configuration file
 config = configparser.ConfigParser()
-config.read(os.path.expanduser(CONFIG_FILE))
+config.read(os.path.expanduser(options.cfgfile))
 
-# Read the temperature
+# Make ready for read of temperature
 sensors = w1_term.Therms()
-temperatures = {}
-for sensor in sensors:
-    temperatures[sensor] = __read_temperature(sensors, sensor)
 
 # Open SQLite database
 with sqlite3.connect(os.path.expanduser(config['DEFAULT']['sqlitedb'])) as db:
@@ -43,5 +46,7 @@ with sqlite3.connect(os.path.expanduser(config['DEFAULT']['sqlitedb'])) as db:
         else:
             oid = oid[0]
         # Save the temperature
-        sql.execute("INSERT INTO temperature(sensor, temperature) VALUES(?,?)", (oid, temperatures[sensor]))
+        if options.verbose:
+            print('Saving temperature of sensor %s' % sensor)
+        sql.execute("INSERT INTO temperature(sensor, temperature) VALUES(?,?)", (oid, read_temperature(sensors, sensor)))
 
