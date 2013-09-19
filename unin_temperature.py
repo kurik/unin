@@ -6,6 +6,9 @@ import sqlite3
 import configparser
 import os
 import optparse
+import gspread
+import datetime
+
 
 CONFIG_FILE="~/etc/unin_temperature.conf"
 
@@ -23,10 +26,18 @@ def read_temperature(sensors, sensor):
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(options.cfgfile))
 
-# Make ready for read of temperature
+# Read temperature from all sensors
 sensors = w1_term.Therms()
+temperatures = {}
+for sensor in sensors:
+    temperatures[sensor] = read_temperature(sensors, sensor)
+    if options.verbose:
+        print('Reading temperature of sensor %s' % sensor)
 
-# Open SQLite database
+
+# Save temperature to SQLite
+if options.verbose:
+    print('Going to save temperature into DB ... ',)
 with sqlite3.connect(os.path.expanduser(config['DEFAULT']['sqlitedb'])) as db:
     sql = db.cursor()
     # Make sure we have all tables defined
@@ -46,7 +57,20 @@ with sqlite3.connect(os.path.expanduser(config['DEFAULT']['sqlitedb'])) as db:
         else:
             oid = oid[0]
         # Save the temperature
-        if options.verbose:
-            print('Saving temperature of sensor %s' % sensor)
-        sql.execute("INSERT INTO temperature(sensor, temperature) VALUES(?,?)", (oid, read_temperature(sensors, sensor)))
+        sql.execute("INSERT INTO temperature(sensor, temperature) VALUES(?,?)", (oid, temperatures[sensor]))
 
+if options.verbose:
+    print('DONE')
+
+# Save the temperature to Google spreadsheet
+if options.verbose:
+    print('Saving temperature to Google spreadsheet ... ',)
+gc = gspread.login(config['GSHEET']['user'], config['GSHEET']['password'])
+spreadsheet = gc.open(config['GSHEET']['sheet_name'])
+w_summary = spreadsheet.worksheet('SUMMARY')
+now = datetime.datetime.now()
+w_summary.update_acell('B2', float(temperatures[config['GSHEET']['out_sensor']]) / 1000)
+w_summary.update_acell('C2', float(temperatures[config['GSHEET']['in_sensor']]) / 1000)
+w_summary.update_acell('A1', now.strftime("%Y-%m-%d\n%H:%M"))
+if options.verbose:
+    print('DONE')
