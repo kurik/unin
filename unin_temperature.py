@@ -83,6 +83,6 @@ pool = Pool(processes=2)
 params = [config, sensors, temperatures]
 db_result = pool.apply_async(save_to_db, (config, sensors, temperatures))
 gs_result = pool.apply_async(save_to_gsheet, (config, sensors, temperatures))
-db_result.get(timeout=15)
-gs_result.get(timeout=30)
+db_result.get(timeout=30)
+gs_result.get(timeout=60)
 
