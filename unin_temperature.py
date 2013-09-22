@@ -65,7 +65,7 @@ def save_to_db(config, sensors, temperatures):
         print('DONE')
 
 # Save the temperature to Google spreadsheet
-def save_to_gsheet((config, sensors, temperatures)):
+def save_to_gsheet(config, sensors, temperatures):
     if options.verbose:
         print('Saving temperature to Google spreadsheet ... ',)
     gc = gspread.login(config['GSHEET']['user'], config['GSHEET']['password'])
@@ -80,6 +80,7 @@ def save_to_gsheet((config, sensors, temperatures)):
 
 # Save to DB and GSpreadsheet
 pool = Pool(processes=2)
+params = [config, sensors, temperatures]
 db_result = pool.apply_async(save_to_db, (config, sensors, temperatures))
 gs_result = pool.apply_async(save_to_gsheet, (config, sensors, temperatures))
 db_result.get(timeout=15)
