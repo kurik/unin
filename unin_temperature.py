@@ -41,7 +41,7 @@ if options.verbose:
 with sqlite3.connect(os.path.expanduser(config['DEFAULT']['sqlitedb'])) as db:
     sql = db.cursor()
     # Make sure we have all tables defined
-    sql.execute("CREATE TABLE IF NOT EXISTS sensor(sensorid TEXT UNIQUE)")
+    sql.execute("CREATE TABLE IF NOT EXISTS sensor(sensorid TEXT UNIQUE, note TEXT)")
     sql.execute("CREATE TABLE IF NOT EXISTS temperature(stamp TEXT DEFAULT (datetime('now')), temperature REAL, sensor INTEGER)")
 
     # Go throught all we have from sensors
