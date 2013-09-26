@@ -13,31 +13,33 @@ from multiprocessing import Pool
 
 CONFIG_FILE="~/etc/unin_temperature.conf"
 
+# Parse command line
 parser = optparse.OptionParser()
 parser.add_option("-c", "--cfgfile", dest="cfgfile", help="Config file [%s]" % CONFIG_FILE, metavar="FILE", default=CONFIG_FILE)
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Be verbose")
 (options, args) = parser.parse_args()
 
-# Read temperature given number of times, if needed, to minimise errors on sesors
-@retry.retry(3)
-def read_temperature(sensors, sensor):
-    return sensors[sensor]
-
 # Parse the configuration file
 config = configparser.ConfigParser()
 config.read(os.path.expanduser(options.cfgfile))
 
-# Read temperature from all sensors
-sensors = w1_term.Therms()
-temperatures = {}
-for sensor in sensors:
-    temperatures[sensor] = read_temperature(sensors, sensor)
-    if options.verbose:
-        print('Reading temperature of sensor %s' % sensor)
+# Read temperature given number of times if needed, to minimise errors on sesors
+@retry.retry(3)
+def read_temperature(sensors, sensor):
+    return sensors[sensor]
 
+# Read temperature from all sensors
+def read_temperatures():
+    sensors = w1_term.Therms()
+    temperatures = {}
+    for sensor in sensors:
+        temperatures[sensor] = read_temperature(sensors, sensor)
+        if options.verbose:
+            print('Reading temperature of sensor %s' % sensor)
+    return temperatures
 
 # Save temperature to SQLite
-def save_to_db(config, sensors, temperatures):
+def save_to_db(config, temperatures):
     if options.verbose:
         print('Going to save temperature into DB ... ',)
     with sqlite3.connect(os.path.expanduser(config['DEFAULT']['sqlitedb'])) as db:
@@ -47,7 +49,7 @@ def save_to_db(config, sensors, temperatures):
         sql.execute("CREATE TABLE IF NOT EXISTS temperature(stamp TEXT DEFAULT (datetime('now')), temperature REAL, sensor INTEGER)")
 
         # Go throught all we have from sensors
-        for sensor in sensors:
+        for sensor in temperatures:
             # Do we have the sensor in DB ?
             sql.execute("SELECT oid FROM sensor WHERE sensorid = ?", (sensor,))
             oid = sql.fetchone()
@@ -65,7 +67,7 @@ def save_to_db(config, sensors, temperatures):
         print('DONE')
 
 # Save the temperature to Google spreadsheet
-def save_to_gsheet(config, sensors, temperatures):
+def save_to_gsheet(config, temperatures):
     if options.verbose:
         print('Saving temperature to Google spreadsheet ... ',)
     gc = gspread.login(config['GSHEET']['user'], config['GSHEET']['password'])
@@ -78,11 +80,15 @@ def save_to_gsheet(config, sensors, temperatures):
     if options.verbose:
         print('DONE')
 
-# Save to DB and GSpreadsheet
+# Read temperatures
+temperatures = read_temperatures()
+# Prepare processes for saving data in paralel
 pool = Pool(processes=2)
-params = [config, sensors, temperatures]
-db_result = pool.apply_async(save_to_db, (config, sensors, temperatures))
-gs_result = pool.apply_async(save_to_gsheet, (config, sensors, temperatures))
+# Save to DB
+db_result = pool.apply_async(save_to_db, (config, temperatures))
+# Save to GSheet
+gs_result = pool.apply_async(save_to_gsheet, (config, temperatures))
+# Wait till the saving process are completed
 db_result.get(timeout=30)
 gs_result.get(timeout=60)
 
