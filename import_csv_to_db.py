@@ -34,8 +34,10 @@ c = conn.cursor()
 
 # Import CSV files one by one
 for cf in args:
+    print('Processing %s' % cf)
+    sys.stdout.flush()
     try:
-        with open(cf, 'rb') as csvfile:
+        with open(cf, 'r') as csvfile:
             csvreader = csv.reader(csvfile)
             sensor = cf.split('.')[1]
             process_csv_file(csvreader, sensor, c)
