@@ -1,0 +1,103 @@
+FORMAT: 1A
+HOST: http://localhost:8080
+
+# The API
+Exposure of temperature from different sensors.
+
+# Group Temperatures
+Notes related resources of the **Temperature API**
+
+## Sensors Collection [/sensors]
+List all Sensors with their description
+
+### Retrieve Sensors [GET]
++ Response 200 (application/json)
+
+        [{
+          "id": 1, "description": "Inside temperature"
+        }, {
+          "id": 2, "description": "Outside temperature"
+        }]
+        
+
+## Sensor [/sensors/{id}]
+A single sensor description with all its details
+
++ Parameters
+    + id (required, string, `1`) ... String `id` of the Sensor toget details of
+
+### Retrieve a sensor details [GET]
++ Response 200 (application/json)
+
+    + Body
+    
+            { "id": 2, "description": "Outside temperature" }
+
++ Response 404 (text/plain)
+
+    + Body
+    
+            The requested sensor id has not been found
+
+## Temperature of a sensor [/sensors/{id}/temperature{?since,to}]
+Current temperature measured by the sensor in *mili* degrees of Celsius. Records in the response are time ordered.
+
++ Parameters
+    + id (required, string, `1`) ... String `id` of the Sensor toget details of
+    + since (optional, string) ... Timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`(default is NOW)
+    + to (optional, string) ... Timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`(default is NOW)
+
+### Retrieve a temperature [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            [
+            { "id": 2, "timestamp": "2007-04-05T14:30Z", "temperature": 3000 },
+            { "id": 2, "timestamp": "2007-04-05T14:31Z", "temperature": 4500 },
+            { "id": 2, "timestamp": "2007-04-05T14:32Z", "temperature": 3900 }
+            ]
+
++ Response 404 (text/plain)
+
+    + Body
+    
+            The requested sensor id has not been found
+
++ Response 400 (text/plain)
+
+    + Body
+    
+            Invalid date/time parameter
+
+## Aggregated values of temperature of a sensor [/sensors/{id}/average{?since,to,granularity}]
+Aggregated temperature of the sensor in *mili* degrees of Celsius. Records in the response are time ordered.
+
++ Parameters
+    + id (required, string, `1`) ... String `id` of the Sensor toget details of
+    + since (optional, string) ... Timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`(default is NOW)
+    + to (optional, string) ... Timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`(default is NOW)
+    + granularity (optional, string) ... Enumeration of the following values (minute,hour,day,week,month,year) (default is a day)
+
+### Retrieve an aggregated temperature [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            [
+            { "id": 2, "since": "2007-04-05T14:30Z", "to": "2007-05-05T14:29Z", "temperature": 3000 },
+            { "id": 2, "since": "2007-05-05T14:30Z", "to": "2007-06-05T14:29Z", "temperature": 4000 },
+            { "id": 2, "since": "2007-06-05T14:30Z", "to": "2007-07-05T14:29Z", "temperature": 8500 }
+            ]
+
++ Response 404 (text/plain)
+
+    + Body
+    
+            The requested sensor id has not been found
+
++ Response 400 (text/plain)
+
+    + Body
+    
+            Invalid date/time or granularity parameter
