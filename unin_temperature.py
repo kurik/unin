@@ -41,7 +41,7 @@ def read_temperatures():
 # Save temperature to SQLite
 def save_to_db(config, temperatures):
     db_name = os.path.expanduser(config['DEFAULT']['sqlitedb'])
-    db_name += '.' + datetime.date.today().strftime("%Y-%m-")
+    db_name += '.' + datetime.date.today().strftime("%Y-%m")
     if options.verbose:
         print('Going to save temperature into DB %s ... ' % db_name)
     with sqlite3.connect(db_name) as db:
