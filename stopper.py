@@ -37,7 +37,8 @@ response.set_header('Access-Control-Allow-Origin', '*')
 
 @route('/static/<filename:path>')
 def send_static(filename):
-    return static_file(filename, root='/home/jkurik/src/unin')
+    # return static_file(filename, root='/home/jkurik/src/unin')
+    return static_file(filename, root='.')
 
 @get('/sensors')
 def api_sensors():
