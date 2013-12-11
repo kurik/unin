@@ -47,7 +47,7 @@ def api_sensors():
         if sensors != "":
             sensors += ','
         sensors += '{"id": "%s", "description":"%s"}' % sensor
-    return "[" + sensors + "]"
+    return '{"sensors": [' + sensors + ']}'
 
 @get('/sensors/<id>')
 def api_sensors_details(id):

@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <title>REST Call Sandbox</title>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    </head>
+
+    <body>
+        <h1>REST Call Sandbox</h1>
+        <ul id="sandbox"></ul>
+    </body>
+
+<script>
+     $(document).on('ready', function () {
+        
+        $.getJSON("http://localhost:8080/sensors", function (response) {
+            $.each(response.sensors, function(i, item) {
+                $.getJSON("http://localhost:8080/sensors/" + item.id + "/temperature", function (t) {
+                    $('#sandbox').append('<li>' + item.id + ': ' + t.temperature + '</li>');
+                });
+            });
+         });
+     });
+</script>
+</html>
