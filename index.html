@@ -12,7 +12,6 @@
 
 <script>
      $(document).on('ready', function () {
-        
         $.getJSON("http://localhost:8080/sensors", function (response) {
             $.each(response.sensors, function(i, item) {
                 $.getJSON("http://localhost:8080/sensors/" + item.id + "/temperature", function (t) {
