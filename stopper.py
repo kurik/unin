@@ -11,7 +11,7 @@ import os
 from bottle import Bottle, run, request, response, get, abort, static_file, route
 
 
-CONFIG_FILE="~/etc/unin_temperature.conf"
+CONFIG_FILE = "~/etc/unin_temperature.conf"
 
 # Parse command line
 parser = optparse.OptionParser()
@@ -80,7 +80,7 @@ def api_sensors_temperature(id):
     return '{"id":"%s", "timestamp":"%s", "temperature":%s}' % temperature
 
 @get('/sensors/<id>/average')
-def api_sensors_temperature(id):
+def api_sensors_average(id):
     # Return details for requested sensor id
     try:
         since = request.query.since
