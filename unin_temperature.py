@@ -7,9 +7,9 @@ import os
 import optparse
 import datetime
 import sys
-import syslog
-from syslog import LOG_EMERG, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING, LOG_NOTICE, LOG_INFO, LOG_DEBUG
 import uninconfig
+import uninlog
+from uninlog import log_info, log_err
 
 # Parse command line
 parser = optparse.OptionParser()
@@ -19,12 +19,12 @@ parser.add_option("-S", "--no-sensor", action="store_true", dest="nosensor", def
     help="No sensors available (used for debugigng)")
 (options, args) = parser.parse_args()
 
-# Initialize syslog
-syslog.openlog('temperature', 0, syslog.LOG_USER)
-
 # Initialise emulation of sensors if needed
 if options.nosensor:
     w1_term.emulation = True
+
+# Initialize logging
+uninlog.console = options.verbose
 
 # Parse the config file
 config = uninconfig.UninConfig()
@@ -35,12 +35,6 @@ config.read(options.cfgfile)
 def read_temperature(sensors, sensor):
     return sensors[sensor]
 
-def log(msg, level = LOG_INFO):
-    if options.verbose:
-        print(('EMERG', 'ALERT', 'CRIT', 'ERR', 'WARNING', 'NOTICE', 'INFO', 'DEBUG')[level] + ':', msg)
-    else:
-        syslog.syslog(level, msg)
-
 # Read temperature from all sensors
 def read_temperatures():
     sensors = w1_term.Therms()
@@ -48,9 +42,9 @@ def read_temperatures():
     for sensor in sensors:
         try:
             temperatures[sensor] = read_temperature(sensors, sensor)
-            log('Sensor %s measured: %s' % (sensor, temperatures[sensor]))
+            log_info('Sensor %s measured: %s' % (sensor, temperatures[sensor]))
         except Exception as e:
-            log('Reading of temperature %s failed: %s' % (sensor, str(e)), LOG_ERR)
+            log_err('Reading of temperature %s failed: %s' % (sensor, str(e)))
     return temperatures
 
 # Save temperature to SQLite
@@ -77,9 +71,9 @@ def save_to_db(config, temperatures):
                     oid = oid[0]
                 # Save the temperature
                 sql.execute("INSERT INTO temperature(sensor, temperature) VALUES(?,?)", (oid, temperatures[sensor]))
-            log('Values succesfully saved to DB: %s' % (db_name))
+            log_info('Values succesfully saved to DB: %s' % (db_name))
     except Exception as e:
-        log('Database error: %s' % (str(e)), LOG_ERR)
+        log_err('Database error: %s' % (str(e)))
 
 # Read temperatures
 temperatures = read_temperatures()
