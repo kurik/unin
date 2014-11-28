@@ -96,9 +96,9 @@ def save_to_db(config, temperatures):
                     oid = oid[0]
                 # Save the temperature
                 sql.execute("INSERT INTO temperature(sensor, temperature) VALUES(?,?)", (oid, temperatures[sensor]))
+            log('Values succesfully saved to DB: %s' % (db_name))
     except Exception as e:
         log('Database error: %s' % (str(e)), LOG_ERR)
-        raise
 
 # Read temperatures
 temperatures = read_temperatures()
