@@ -27,6 +27,8 @@ def init_db():
             except sqlite3.IntegrityError as e:
                 pass
             sql.execute("DETACH DATABASE " + dbid)
+        sql.execute("CREATE INDEX stamp_idx ON temperature(stamp)")
+        sql.execute("CREATE INDEX temperature_idx ON temperature(temperature)")
 
 def update_db():
     with sqlite3.connect(uc.get_dbtmp()) as db:
