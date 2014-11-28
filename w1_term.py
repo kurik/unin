@@ -11,10 +11,10 @@ w1_sys_bus = '/sys/bus/w1/devices'
 emulation = False
 
 emulatedData = {
-    '28-000001b4337c':'2a 01 4b 46 7f ff 06 10 16 : crc=16 YES\n2a 01 4b 46 7f ff 06 10 16 t=18625',
-    '28-000001b43eb4':'ff ff ff ff ff ff ff ff ff : crc=c9 NO\n0a 01 4b 46 7f ff 06 10 be t=-62',
-    '28-000001b43eba':'0b 01 4b 46 7f ff 05 10 a8 : crc=a8 YES\n0b 01 4b 46 7f ff 05 10 a8 t=16687',
-    '28-000001b4754f':'45 01 4b 46 7f ff 0b 10 84 : crc=84 YES\n45 01 4b 46 7f ff 0b 10 84 t=20312',
+    '28-000001b4337c':'2a 01 4b 46 7f ff 06 10 16 : crc=16 YES\n2a 01 4b 46 7f ff 06 10 16 t=' + str(136 * ord(os.urandom(1))),
+    '28-000001b43eb4':'ff ff ff ff ff ff ff ff ff : crc=c9 NO\n0a 01 4b 46 7f ff 06 10 be t=-' + str(136 * ord(os.urandom(1))),
+    '28-000001b43eba':'0b 01 4b 46 7f ff 05 10 a8 : crc=a8 YES\n0b 01 4b 46 7f ff 05 10 a8 t=' + str(136 * ord(os.urandom(1))),
+    '28-000001b4754f':'45 01 4b 46 7f ff 0b 10 84 : crc=84 YES\n45 01 4b 46 7f ff 0b 10 84 t=' + str(136 * ord(os.urandom(1))),
 }
 
 # Handling exceptions from termal sensors
