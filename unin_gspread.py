@@ -5,7 +5,6 @@ import optparse
 import sys
 import uninconfig
 import uninlog
-import uninaggr
 from uninlog import log_info, log_err
 import httplib2
 import oauth2client.client
@@ -45,6 +44,7 @@ if credentials is None:
         code = input('Enter verification code: ').strip()
     credentials = flow.step2_exchange(code)
     storage.put(credentials)
+log_info('Authentication to Google drive succeeded.')
 
 gc = gspread.authorize(credentials)
 try:
@@ -55,6 +55,8 @@ except gspread.httpsession.HTTPError as e:
 
 
 ###
+log_info('Aggregating data')
+import uninaggr
 data = uninaggr.get_current()
 stamp = data[config.get_in_sensor()]['stamp'].replace(' ', '\n')
 out_current = data[config.get_out_sensor()]['temperature']
@@ -94,6 +96,7 @@ in_y_min = data[config.get_in_sensor()]["min"]
 in_y_max = data[config.get_in_sensor()]["max"]
 ###
 
+log_info('Saving aggregated data to Google spreadsheet')
 dashboard = sh.worksheet("SUMMARY")
 cell_list = dashboard.range('A1:I6')
 for cell in cell_list:
@@ -160,7 +163,3 @@ for cell in cell_list:
             cell.value = in_y_max / 1000.0
 
 dashboard.update_cells(cell_list)
-
-
-
-
