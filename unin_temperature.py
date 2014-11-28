@@ -55,7 +55,7 @@ def save_to_db(config, temperatures):
             sql = db.cursor()
             # Make sure we have all tables defined
             sql.execute("CREATE TABLE IF NOT EXISTS sensor(sensorid TEXT UNIQUE, note TEXT)")
-            sql.execute("CREATE TABLE IF NOT EXISTS temperature(stamp TEXT DEFAULT (datetime('now')), temperature REAL, sensor INTEGER)")
+            sql.execute("CREATE TABLE IF NOT EXISTS temperature(stamp TEXT DEFAULT (datetime('now','localtime')), temperature REAL, sensor INTEGER)")
 
             # Go throught all we have from sensors
             for sensor in temperatures:
