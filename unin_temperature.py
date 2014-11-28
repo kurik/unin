@@ -9,12 +9,11 @@ import datetime
 import sys
 import syslog
 from syslog import LOG_EMERG, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING, LOG_NOTICE, LOG_INFO, LOG_DEBUG
-
-CONFIG_FILE="~/etc/unin_temperature.conf"
+import uninconfig
 
 # Parse command line
 parser = optparse.OptionParser()
-parser.add_option("-c", "--cfgfile", dest="cfgfile", help="Config file [%s]" % CONFIG_FILE, metavar="FILE", default=CONFIG_FILE)
+parser.add_option("-c", "--cfgfile", dest="cfgfile", help="Config file [%s]" % uninconfig.CONFIG_FILE, metavar = "FILE", default = None)
 parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Be verbose on console and do not use syslog.")
 parser.add_option("-S", "--no-sensor", action="store_true", dest="nosensor", default=False,
     help="No sensors available (used for debugigng)")
@@ -28,25 +27,8 @@ if options.nosensor:
     w1_term.emulation = True
 
 # Parse the config file
-if sys.version_info[0] == 3:
-    # Python 3.x
-    import configparser
-    config = configparser.ConfigParser()
-elif sys.version_info[0] == 2:
-    # Python 2.x
-    import ConfigParser
-    class section(object):
-        def __init__(self, cfg, section):
-            self.cfg = cfg
-            self.section = section
-        def __getitem__(self, item):
-            return self.cfg.get(self.section, item)
-    class configparser(ConfigParser.ConfigParser):
-        def __getitem__(self, sect):
-            return section(self, sect)
-    config = configparser()
-
-config.read(os.path.expanduser(options.cfgfile))
+config = uninconfig.UninConfig()
+config.read(options.cfgfile)
 
 # Read temperature given number of times if needed, to minimise errors on sesors
 @retry.retry(3)
@@ -73,9 +55,8 @@ def read_temperatures():
 
 # Save temperature to SQLite
 def save_to_db(config, temperatures):
-    db_name = os.path.expanduser(config['DEFAULT']['sqlitedb'])
-    db_name += '.' + datetime.date.today().strftime("%Y-%m")
     try:
+        db_name = config.get_dbname()
         with sqlite3.connect(db_name) as db:
             sql = db.cursor()
             # Make sure we have all tables defined
