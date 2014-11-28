@@ -28,6 +28,7 @@ uninlog.console = options.verbose
 config = uninconfig.UninConfig()
 config.read(options.cfgfile)
 
+log_info('Authenticating to Google drive')
 # Try to get credentials from a Store
 storage = Storage(config.get_client_storage())
 credentials = storage.get()
@@ -44,7 +45,6 @@ if credentials is None:
         code = input('Enter verification code: ').strip()
     credentials = flow.step2_exchange(code)
     storage.put(credentials)
-log_info('Authentication to Google drive succeeded.')
 
 gc = gspread.authorize(credentials)
 try:
