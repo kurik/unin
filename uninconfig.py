@@ -3,9 +3,11 @@
 import datetime
 import sys
 import os
+import glob
 
 CONFIG_FILE = "~/etc/unin_temperature.conf"
 DEFAULT_DBNAME = "~/var/unin_temperature.db"
+DEFAULT_DBTMP = "/tmp/unin.db"
 DEFAULT_GSHEET = "Unin Temperature"
 DEFAULT_OUT = "28-000001b4337c"
 DEFAULT_IN = "28-000001b4754f"
@@ -46,6 +48,20 @@ class UninConfig(UninConfig_t):
             dbname = DEFAULT_DBNAME
         return os.path.expanduser(dbname + '.' + datetime.date.today().strftime("%Y-%m"))
 
+    def get_dbtmp(self):
+        try:
+            dbname = self['DEFAULT']['sqlitetmp']
+        except:
+            dbname = DEFAULT_DBTMP
+        return os.path.expanduser(dbname)
+
+    def get_dbs(self):
+        try:
+            dbname = self['DEFAULT']['sqlitedb']
+        except:
+            dbname = DEFAULT_DBNAME
+        return glob.glob(os.path.expanduser(dbname) + '.20[0-9][0-9]-[0-9][0-9]')
+
     def get_client_secret(self):
         try:
             f = self['GSHEET']['client_secret']
@@ -85,3 +101,4 @@ if __name__ == '__main__':
     uc.read(CONFIG_FILE)
     print('Database:', uc['DEFAULT']['sqlitedb'])
     print('Database filename:', uc.get_dbname())
+    print('Databases:', uc.get_dbs())

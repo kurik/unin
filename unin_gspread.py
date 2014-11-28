@@ -5,6 +5,7 @@ import optparse
 import sys
 import uninconfig
 import uninlog
+import uninaggr
 from uninlog import log_info, log_err
 import httplib2
 import oauth2client.client
@@ -51,41 +52,51 @@ except gspread.httpsession.HTTPError as e:
 
 
 ###
-out_current = -3000
-in_current = 14200
+data = uninaggr.get_current()
+stamp = data[config.get_in_sensor()]['stamp'].replace(' ', '\n')
+out_current = data[config.get_out_sensor()]['temperature']
+in_current = data[config.get_in_sensor()]['temperature']
 
-out_24_avg = 12000
-out_24_min = 11000
-out_24_max = 13000
-in_24_avg = 22000
-in_24_min = 21000
-in_24_max = 23000
 
-out_w_avg = 12000
-out_w_min = 11000
-out_w_max = 13000
-in_w_avg = 22000
-in_w_min = 21000
-in_w_max = 23000
+data = uninaggr.get_aggr(1)
+out_24_avg = data[config.get_out_sensor()]["avg"]
+out_24_min = data[config.get_out_sensor()]["min"]
+out_24_max = data[config.get_out_sensor()]["max"]
+in_24_avg = data[config.get_in_sensor()]["avg"]
+in_24_min = data[config.get_in_sensor()]["min"]
+in_24_max = data[config.get_in_sensor()]["max"]
 
-out_m_avg = 12000
-out_m_min = 11000
-out_m_max = 13000
-in_m_avg = 22000
-in_m_min = 21000
-in_m_max = 23000
+data = uninaggr.get_aggr(7)
+out_w_avg = data[config.get_out_sensor()]["avg"]
+out_w_min = data[config.get_out_sensor()]["min"]
+out_w_max = data[config.get_out_sensor()]["max"]
+in_w_avg = data[config.get_in_sensor()]["avg"]
+in_w_min = data[config.get_in_sensor()]["min"]
+in_w_max = data[config.get_in_sensor()]["max"]
 
-out_y_avg = 12000
-out_y_min = 11000
-out_y_max = 13000
-in_y_avg = 22000
-in_y_min = 21000
-in_y_max = 23000
+data = uninaggr.get_aggr(30)
+out_m_avg = data[config.get_out_sensor()]["avg"]
+out_m_min = data[config.get_out_sensor()]["min"]
+out_m_max = data[config.get_out_sensor()]["max"]
+in_m_avg = data[config.get_in_sensor()]["avg"]
+in_m_min = data[config.get_in_sensor()]["min"]
+in_m_max = data[config.get_in_sensor()]["max"]
+
+data = uninaggr.get_aggr(365)
+out_y_avg = data[config.get_out_sensor()]["avg"]
+out_y_min = data[config.get_out_sensor()]["min"]
+out_y_max = data[config.get_out_sensor()]["max"]
+in_y_avg = data[config.get_in_sensor()]["avg"]
+in_y_min = data[config.get_in_sensor()]["min"]
+in_y_max = data[config.get_in_sensor()]["max"]
 ###
 
 dashboard = sh.worksheet("SUMMARY")
 cell_list = dashboard.range('A1:I6')
 for cell in cell_list:
+    if cell.row == 1:
+        if cell.col == 1:
+            cell.value = stamp
     if cell.row == 2:
         if cell.col == 2:
             cell.value = out_current / 1000.0
