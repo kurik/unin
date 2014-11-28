@@ -55,7 +55,7 @@ def get_current():
 def get_aggr(days):
     with sqlite3.connect(uc.get_dbtmp()) as db:
         sql = db.cursor()
-        sql.execute("SELECT sensor.sensorid,MIN(temperature.temperature),AVG(temperature.temperature),MAX(temperature.temperature) FROM temperature, sensor WHERE sensor.oid = temperature.sensor AND stamp >= datetime('now', '-%s day') GROUP BY sensor.sensorid" % str(days))
+        sql.execute("SELECT sensor.sensorid,MIN(temperature.temperature),AVG(temperature.temperature),MAX(temperature.temperature) FROM temperature, sensor WHERE sensor.oid = temperature.sensor AND stamp >= datetime('now', '-%s day') AND temperature.temperature < 50 GROUP BY sensor.sensorid" % str(days))
         result = dict()
         data = sql.fetchone()
         while data is not None:
