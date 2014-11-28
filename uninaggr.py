@@ -4,6 +4,7 @@ import uninconfig
 import datetime
 import sqlite3
 import os
+from uninlog import log_info, log_err
 
 uc = uninconfig.UninConfig()
 uc.read()
@@ -76,7 +77,7 @@ def get_aggr(days):
 try:
     statinfo = os.stat(uc.get_dbtmp())
     st_size = statinfo.st_size
-except:
+except Exception as e:
     st_size = 0
 if st_size < 8100:
     try:

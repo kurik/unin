@@ -28,31 +28,6 @@ uninlog.console = options.verbose
 config = uninconfig.UninConfig()
 config.read(options.cfgfile)
 
-log_info('Authenticating to Google drive')
-# Try to get credentials from a Store
-storage = Storage(config.get_client_storage())
-credentials = storage.get()
-
-if credentials is None:
-    # Perform OAuth2.0 authorization flow.
-    flow = oauth2client.client.flow_from_clientsecrets(config.get_client_secret(), OAUTH2_SCOPE)
-    flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
-    authorize_url = flow.step1_get_authorize_url()
-    print('Go to the following link in your browser: ' + authorize_url)
-    try: # The pythov 2.x/3.x compatability
-        code = raw_input('Enter verification code: ').strip()
-    except:
-        code = input('Enter verification code: ').strip()
-    credentials = flow.step2_exchange(code)
-    storage.put(credentials)
-
-gc = gspread.authorize(credentials)
-try:
-    sh = gc.open(config.get_gsheet())
-except gspread.httpsession.HTTPError as e:
-    log_err('Status: ' + str(e.response.status))
-    log_err('Reason:' + str(e.response.reason))
-
 
 ###
 log_info('Aggregating data')
@@ -95,6 +70,31 @@ in_y_avg = data[config.get_in_sensor()]["avg"]
 in_y_min = data[config.get_in_sensor()]["min"]
 in_y_max = data[config.get_in_sensor()]["max"]
 ###
+
+log_info('Authenticating to Google drive')
+# Try to get credentials from a Store
+storage = Storage(config.get_client_storage())
+credentials = storage.get()
+
+if credentials is None:
+    # Perform OAuth2.0 authorization flow.
+    flow = oauth2client.client.flow_from_clientsecrets(config.get_client_secret(), OAUTH2_SCOPE)
+    flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
+    authorize_url = flow.step1_get_authorize_url()
+    print('Go to the following link in your browser: ' + authorize_url)
+    if sys.version_info[0] == 2:
+        code = raw_input('Enter verification code: ').strip()
+    else:
+        code = input('Enter verification code: ').strip()
+    credentials = flow.step2_exchange(code)
+    storage.put(credentials)
+
+gc = gspread.authorize(credentials)
+try:
+    sh = gc.open(config.get_gsheet())
+except gspread.httpsession.HTTPError as e:
+    log_err('Status: ' + str(e.response.status))
+    log_err('Reason:' + str(e.response.reason))
 
 log_info('Saving aggregated data to Google spreadsheet')
 dashboard = sh.worksheet("SUMMARY")
