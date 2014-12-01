@@ -10,6 +10,7 @@ import httplib2
 import oauth2client.client
 import gspread
 from oauth2client.file import Storage
+from oauth2client.tools import run_flow
 import uninaggr
 
 
@@ -59,13 +60,15 @@ for stamp in sorted(daily_merged):
     row += 1
 
 log_info('Authenticating to Google drive')
+flow = oauth2client.client.flow_from_clientsecrets(config.get_client_secret(), OAUTH2_SCOPE)
 # Try to get credentials from a Store
 storage = Storage(config.get_client_storage())
 credentials = storage.get()
 
+
 if credentials is None:
     # Perform OAuth2.0 authorization flow.
-    flow = oauth2client.client.flow_from_clientsecrets(config.get_client_secret(), OAUTH2_SCOPE)
+    flow.params.update({'access_type':'offline','approval_prompt':'force'})
     flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
     authorize_url = flow.step1_get_authorize_url()
     print('Go to the following link in your browser: ' + authorize_url)
@@ -75,6 +78,8 @@ if credentials is None:
         code = input('Enter verification code: ').strip()
     credentials = flow.step2_exchange(code)
     storage.put(credentials)
+elif credentials.invalid:
+    credentials = run_flow(flow, storage)
 
 gc = gspread.authorize(credentials)
 try:
