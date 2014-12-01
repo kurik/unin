@@ -104,10 +104,9 @@ except gspread.httpsession.HTTPError as e:
     log_err('Status: ' + str(e.response.status))
     log_err('Reason:' + str(e.response.reason))
 
-#rows = len(cells) + 10
-rows = int((len(cells) / 3) + 100)
-log_info('Getting current data from spreadsheet (%s rows)' % str(rows))
+log_info('Getting current data from spreadsheet')
 dashboard = sh.worksheet("DAILY")
+rows = int(dashboard.acell('D2').value)
 cell_list = dashboard.range('A2:C%s' % str(rows))
 log_info('Reshufling data')
 for c in cell_list:
