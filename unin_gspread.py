@@ -71,6 +71,7 @@ storage = Storage(config.get_client_storage())
 credentials = storage.get()
 if credentials is None or credentials.invalid == True:
   credentials =  tools.run(flow, storage)
+  storage.put(credentials)
 
 ###http = httplib2.Http()
 ###http = credentials.authorize(http)
@@ -98,6 +99,7 @@ if credentials is None or credentials.invalid == True:
     ###credentials = run_flow(flow, storage)
 
 gc = gspread.authorize(credentials)
+sh = None
 try:
     sh = gc.open(config.get_gsheet())
 except gspread.httpsession.HTTPError as e:
@@ -105,8 +107,16 @@ except gspread.httpsession.HTTPError as e:
     log_err('Reason:' + str(e.response.reason))
 
 log_info('Getting current data from spreadsheet')
-dashboard = sh.worksheet("DAILY")
-rows = int(dashboard.acell('D2').value)
+try:
+    dashboard = sh.worksheet("DAILY")
+except:
+    credentials =  tools.run(flow, storage)
+    storage.put(credentials)
+    gc = gspread.authorize(credentials)
+    sh = gc.open(config.get_gsheet())
+    dashboard = sh.worksheet("DAILY")
+
+rows = int(dashboard.acell('D2').value) + 100
 cell_list = dashboard.range('A2:C%s' % str(rows))
 log_info('Reshufling data')
 for c in cell_list:
