@@ -10,6 +10,7 @@ import httplib2
 import oauth2client.client
 import gspread
 from oauth2client.file import Storage
+import uninaggr
 
 
 OAUTH2_SCOPE = 'https://spreadsheets.google.com/feeds'
@@ -30,46 +31,32 @@ config.read(options.cfgfile)
 
 
 ###
-log_info('Aggregating data')
-import uninaggr
-data = uninaggr.get_current()
-stamp = data[config.get_in_sensor()]['stamp'].replace(' ', '\n')
-out_current = data[config.get_out_sensor()]['temperature']
-in_current = data[config.get_in_sensor()]['temperature']
-
-
-data = uninaggr.get_aggr(1)
-out_24_avg = data[config.get_out_sensor()]["avg"]
-out_24_min = data[config.get_out_sensor()]["min"]
-out_24_max = data[config.get_out_sensor()]["max"]
-in_24_avg = data[config.get_in_sensor()]["avg"]
-in_24_min = data[config.get_in_sensor()]["min"]
-in_24_max = data[config.get_in_sensor()]["max"]
-
-data = uninaggr.get_aggr(7)
-out_w_avg = data[config.get_out_sensor()]["avg"]
-out_w_min = data[config.get_out_sensor()]["min"]
-out_w_max = data[config.get_out_sensor()]["max"]
-in_w_avg = data[config.get_in_sensor()]["avg"]
-in_w_min = data[config.get_in_sensor()]["min"]
-in_w_max = data[config.get_in_sensor()]["max"]
-
-data = uninaggr.get_aggr(30)
-out_m_avg = data[config.get_out_sensor()]["avg"]
-out_m_min = data[config.get_out_sensor()]["min"]
-out_m_max = data[config.get_out_sensor()]["max"]
-in_m_avg = data[config.get_in_sensor()]["avg"]
-in_m_min = data[config.get_in_sensor()]["min"]
-in_m_max = data[config.get_in_sensor()]["max"]
-
-data = uninaggr.get_aggr(365)
-out_y_avg = data[config.get_out_sensor()]["avg"]
-out_y_min = data[config.get_out_sensor()]["min"]
-out_y_max = data[config.get_out_sensor()]["max"]
-in_y_avg = data[config.get_in_sensor()]["avg"]
-in_y_min = data[config.get_in_sensor()]["min"]
-in_y_max = data[config.get_in_sensor()]["max"]
+log_info('Gathering data')
+current = uninaggr.get_current()
+daily = uninaggr.get_daily()
 ###
+
+row = 2
+log_info('Aggregating data')
+daily_merged = dict()
+for r in daily:
+    (stamp, sensor) = r.split('.')
+    if stamp not in daily_merged:
+        daily_merged[stamp] = ["", ""]
+    if sensor == config.get_out_sensor():
+        daily_merged[stamp][0] = daily[r]['temperature']
+    elif sensor == config.get_in_sensor():
+        daily_merged[stamp][1] = daily[r]['temperature']
+    else:
+        # Unknow sensor
+        continue
+
+cells = dict()
+for stamp in sorted(daily_merged):
+    cells['%s:%s' % (row, 1)] = stamp
+    cells['%s:%s' % (row, 2)] = daily_merged[stamp][0]
+    cells['%s:%s' % (row, 3)] = daily_merged[stamp][1]
+    row += 1
 
 log_info('Authenticating to Google drive')
 # Try to get credentials from a Store
@@ -96,70 +83,20 @@ except gspread.httpsession.HTTPError as e:
     log_err('Status: ' + str(e.response.status))
     log_err('Reason:' + str(e.response.reason))
 
-log_info('Saving aggregated data to Google spreadsheet')
-dashboard = sh.worksheet("SUMMARY")
-cell_list = dashboard.range('A1:I6')
-for cell in cell_list:
-    if cell.row == 1:
-        if cell.col == 1:
-            cell.value = stamp
-    if cell.row == 2:
-        if cell.col == 2:
-            cell.value = out_current / 1000.0
-        if cell.col == 3:
-            cell.value = in_current / 1000.0
-    if cell.row == 3:
-        if cell.col == 2:
-            cell.value = out_24_avg / 1000.0
-        if cell.col == 3:
-            cell.value = in_24_avg / 1000.0
-        if cell.col == 5:
-            cell.value = out_24_min / 1000.0
-        if cell.col == 6:
-            cell.value = in_24_min / 1000.0
-        if cell.col == 8:
-            cell.value = out_24_max / 1000.0
-        if cell.col == 9:
-            cell.value = in_24_max / 1000.0
-    if cell.row == 4:
-        if cell.col == 2:
-            cell.value = out_w_avg / 1000.0
-        if cell.col == 3:
-            cell.value = in_w_avg / 1000.0
-        if cell.col == 5:
-            cell.value = out_w_min / 1000.0
-        if cell.col == 6:
-            cell.value = in_w_min / 1000.0
-        if cell.col == 8:
-            cell.value = out_w_max / 1000.0
-        if cell.col == 9:
-            cell.value = in_w_max / 1000.0
-    if cell.row == 5:
-        if cell.col == 2:
-            cell.value = out_m_avg / 1000.0
-        if cell.col == 3:
-            cell.value = in_m_avg / 1000.0
-        if cell.col == 5:
-            cell.value = out_m_min / 1000.0
-        if cell.col == 6:
-            cell.value = in_m_min / 1000.0
-        if cell.col == 8:
-            cell.value = out_m_max / 1000.0
-        if cell.col == 9:
-            cell.value = in_m_max / 1000.0
-
-    if cell.row == 6:
-        if cell.col == 2:
-            cell.value = out_y_avg / 1000.0
-        if cell.col == 3:
-            cell.value = in_y_avg / 1000.0
-        if cell.col == 5:
-            cell.value = out_y_min / 1000.0
-        if cell.col == 6:
-            cell.value = in_y_min / 1000.0
-        if cell.col == 8:
-            cell.value = out_y_max / 1000.0
-        if cell.col == 9:
-            cell.value = in_y_max / 1000.0
-
+#rows = len(cells) + 10
+rows = int((len(cells) / 3) + 3)
+log_info('Getting current data from spreadsheet (%s rows)' % rows)
+dashboard = sh.worksheet("DAILY")
+cell_list = dashboard.range('A2:C%s' % str(rows))
+log_info('Reshufling data')
+for c in cell_list:
+    try:
+        if c.col == 1:
+            c.value = cells['%s:%s' % (c.row, c.col)]
+        else:
+            c.value = int(cells['%s:%s' % (c.row, c.col)]) / 1000.0
+    except:
+        c.value = ""
+    
+log_info('Saving aggregated data to spreadsheet')
 dashboard.update_cells(cell_list)

@@ -48,6 +48,20 @@ class UninConfig(UninConfig_t):
             dbname = DEFAULT_DBNAME
         return os.path.expanduser(dbname + '.' + datetime.date.today().strftime("%Y-%m"))
 
+    def get_dbnameold(self):
+        try:
+            dbname = self['DEFAULT']['sqlitedb']
+        except:
+            dbname = DEFAULT_DBNAME
+        year = datetime.date.today().year
+        month = datetime.date.today().month
+        if month == 1:
+            year -= 1
+            month = 12
+        else:
+            month -= 1
+        return os.path.expanduser(dbname + '.%.4d-%.2d' % (year, month))
+
     def get_dbtmp(self):
         try:
             dbname = self['DEFAULT']['sqlitetmp']
