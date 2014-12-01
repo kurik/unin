@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
+import gflags
 import sqlite3
 import optparse
 import sys
 import uninconfig
 import uninlog
+import uninaggr
 from uninlog import log_info, log_err
 import httplib2
-import oauth2client.client
-import gspread
 from oauth2client.file import Storage
-from oauth2client.tools import run_flow
-import uninaggr
+from oauth2client import tools
+from oauth2client.client import OAuth2WebServerFlow
+import gspread
 
 
 OAUTH2_SCOPE = 'https://spreadsheets.google.com/feeds'
@@ -60,26 +61,41 @@ for stamp in sorted(daily_merged, reverse=True):
     row += 1
 
 log_info('Authenticating to Google drive')
-flow = oauth2client.client.flow_from_clientsecrets(config.get_client_secret(), OAUTH2_SCOPE)
-# Try to get credentials from a Store
+
+GOOGLE_API_CLIENT_ID = '716515596536-tov4vvgh08l2fvas7esg4hia72s2ue08.apps.googleusercontent.com'
+GOOGLE_API_CLIENT_SECRET = 'v5KdTFYehsMrcHQsYgNJWYkP'
+
+
+flow = OAuth2WebServerFlow(client_id=GOOGLE_API_CLIENT_ID, client_secret=GOOGLE_API_CLIENT_SECRET, scope=OAUTH2_SCOPE, user_agent='Unin-Temperature', access_type='offline', approval_prompt='force')
 storage = Storage(config.get_client_storage())
 credentials = storage.get()
+if credentials is None or credentials.invalid == True:
+  credentials =  tools.run(flow, storage)
+
+###http = httplib2.Http()
+###http = credentials.authorize(http)
 
 
-if credentials is None:
+###flow = oauth2client.client.flow_from_clientsecrets(config.get_client_secret(), OAUTH2_SCOPE)
+# Try to get credentials from a Store
+###storage = Storage(config.get_client_storage())
+###credentials = storage.get()
+
+
+###if credentials is None:
     # Perform OAuth2.0 authorization flow.
-    flow.params.update({'access_type':'offline','approval_prompt':'force'})
-    flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
-    authorize_url = flow.step1_get_authorize_url()
-    print('Go to the following link in your browser: ' + authorize_url)
-    if sys.version_info[0] == 2:
-        code = raw_input('Enter verification code: ').strip()
-    else:
-        code = input('Enter verification code: ').strip()
-    credentials = flow.step2_exchange(code)
-    storage.put(credentials)
-elif credentials.invalid:
-    credentials = run_flow(flow, storage)
+    ###flow.params.update({'access_type':'offline','approval_prompt':'force'})
+    ###flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
+    ###authorize_url = flow.step1_get_authorize_url()
+    ###print('Go to the following link in your browser: ' + authorize_url)
+    ###if sys.version_info[0] == 2:
+        ###code = raw_input('Enter verification code: ').strip()
+    ###else:
+        ###code = input('Enter verification code: ').strip()
+    ###credentials = flow.step2_exchange(code)
+    ###storage.put(credentials)
+###elif credentials.invalid:
+    ###credentials = run_flow(flow, storage)
 
 gc = gspread.authorize(credentials)
 try:
