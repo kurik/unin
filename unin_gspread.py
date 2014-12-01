@@ -32,14 +32,9 @@ config = uninconfig.UninConfig()
 config.read(options.cfgfile)
 
 
-###
-log_info('Gathering data')
+log_info('Gathering and aggregating data')
 current = uninaggr.get_current()
 daily = uninaggr.get_daily()
-###
-
-row = 2
-log_info('Aggregating data')
 daily_merged = dict()
 for r in daily:
     (stamp, sensor) = r.split('.')
@@ -53,6 +48,7 @@ for r in daily:
         # Unknow sensor
         continue
 
+row = 2
 cells = dict()
 for stamp in sorted(daily_merged, reverse=True):
     cells['%s:%s' % (row, 1)] = stamp
@@ -118,7 +114,7 @@ except:
 
 rows = int(dashboard.acell('D2').value) + 100
 cell_list = dashboard.range('A2:C%s' % str(rows))
-log_info('Reshufling data')
+log_info('Reshuffling data')
 for c in cell_list:
     try:
         if c.col == 1:
