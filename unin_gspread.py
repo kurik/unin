@@ -53,7 +53,7 @@ for r in daily:
         continue
 
 cells = dict()
-for stamp in sorted(daily_merged):
+for stamp in sorted(daily_merged, reverse=True):
     cells['%s:%s' % (row, 1)] = stamp
     cells['%s:%s' % (row, 2)] = daily_merged[stamp][0]
     cells['%s:%s' % (row, 3)] = daily_merged[stamp][1]
@@ -90,7 +90,7 @@ except gspread.httpsession.HTTPError as e:
 
 #rows = len(cells) + 10
 rows = int((len(cells) / 3) + 100)
-log_info('Getting current data from spreadsheet (%s rows)' % rows)
+log_info('Getting current data from spreadsheet (%s rows)' % str(rows))
 dashboard = sh.worksheet("DAILY")
 cell_list = dashboard.range('A2:C%s' % str(rows))
 log_info('Reshufling data')
