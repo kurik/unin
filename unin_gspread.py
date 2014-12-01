@@ -89,7 +89,7 @@ except gspread.httpsession.HTTPError as e:
     log_err('Reason:' + str(e.response.reason))
 
 #rows = len(cells) + 10
-rows = int((len(cells) / 3) + 3)
+rows = int((len(cells) / 3) + 100)
 log_info('Getting current data from spreadsheet (%s rows)' % rows)
 dashboard = sh.worksheet("DAILY")
 cell_list = dashboard.range('A2:C%s' % str(rows))
