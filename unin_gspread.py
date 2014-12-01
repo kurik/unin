@@ -112,7 +112,9 @@ except:
     sh = gc.open(config.get_gsheet())
     dashboard = sh.worksheet("DAILY")
 
-rows = int(dashboard.acell('D2').value) + 100
+rows = int(dashboard.acell('D2').value)
+if rows < len(cells):
+    rows = len(cells) + 1
 cell_list = dashboard.range('A2:C%s' % str(rows))
 log_info('Reshuffling data')
 for c in cell_list:
