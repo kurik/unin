@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import gflags
 import sqlite3
-import optparse
 import sys
 import uninconfig
 import uninlog
@@ -11,25 +9,40 @@ from uninlog import log_info, log_err
 import httplib2
 from oauth2client.file import Storage
 from oauth2client import tools
-from oauth2client.client import OAuth2WebServerFlow
+import oauth2client
+from apiclient import discovery
 import gspread
+import argparse
+import os
 
 
 OAUTH2_SCOPE = 'https://spreadsheets.google.com/feeds'
 
+def gauth(oauth2json, oauth2storage, flags = None):
+    store = Storage(oauth2storage)
+    creds = store.get()
+    if creds is None or creds.invalid:
+        flow = oauth2client.client.flow_from_clientsecrets(oauth2json, OAUTH2_SCOPE)
+        creds = oauth2client.tools.run_flow(flow, store, flags.parse_args())
+        store.put(creds)
+    return creds
 
 # Parse command line
-parser = optparse.OptionParser()
-parser.add_option("-c", "--cfgfile", dest="cfgfile", help="Config file [%s]" % uninconfig.CONFIG_FILE, metavar = "FILE", default = None)
-parser.add_option("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Be verbose on console and do not use syslog.")
-(options, args) = parser.parse_args()
+parser = argparse.ArgumentParser(parents=[tools.argparser], add_help=False)
+parser.add_argument("-c", "--cfgfile", dest="cfgfile", help="Config file [%s]" % uninconfig.CONFIG_FILE, metavar = "FILE", default = None)
+parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Be verbose on console and do not use syslog.")
+cmdline = parser.parse_args()
+
+oauth2json = os.path.expanduser('~/.temp_upload.json')
+oauth2storage = os.path.expanduser('~/.temp_upload')
+credentials = gauth(oauth2json = oauth2json, oauth2storage = oauth2storage, flags = parser)
 
 # Initialize logging
-uninlog.console = options.verbose
+uninlog.console = cmdline.verbose
 
 # Parse the config file
 config = uninconfig.UninConfig()
-config.read(options.cfgfile)
+config.read(cmdline.cfgfile)
 
 
 log_info('Gathering and aggregating data')
@@ -57,42 +70,6 @@ for stamp in sorted(daily_merged, reverse=True):
     row += 1
 
 log_info('Authenticating to Google drive')
-
-GOOGLE_API_CLIENT_ID = '716515596536-tov4vvgh08l2fvas7esg4hia72s2ue08.apps.googleusercontent.com'
-GOOGLE_API_CLIENT_SECRET = 'v5KdTFYehsMrcHQsYgNJWYkP'
-
-
-flow = OAuth2WebServerFlow(client_id=GOOGLE_API_CLIENT_ID, client_secret=GOOGLE_API_CLIENT_SECRET, scope=OAUTH2_SCOPE, user_agent='Unin-Temperature', access_type='offline', approval_prompt='force')
-storage = Storage(config.get_client_storage())
-credentials = storage.get()
-if credentials is None or credentials.invalid == True:
-  credentials =  tools.run(flow, storage)
-  storage.put(credentials)
-
-###http = httplib2.Http()
-###http = credentials.authorize(http)
-
-
-###flow = oauth2client.client.flow_from_clientsecrets(config.get_client_secret(), OAUTH2_SCOPE)
-# Try to get credentials from a Store
-###storage = Storage(config.get_client_storage())
-###credentials = storage.get()
-
-
-###if credentials is None:
-    # Perform OAuth2.0 authorization flow.
-    ###flow.params.update({'access_type':'offline','approval_prompt':'force'})
-    ###flow.redirect_uri = oauth2client.client.OOB_CALLBACK_URN
-    ###authorize_url = flow.step1_get_authorize_url()
-    ###print('Go to the following link in your browser: ' + authorize_url)
-    ###if sys.version_info[0] == 2:
-        ###code = raw_input('Enter verification code: ').strip()
-    ###else:
-        ###code = input('Enter verification code: ').strip()
-    ###credentials = flow.step2_exchange(code)
-    ###storage.put(credentials)
-###elif credentials.invalid:
-    ###credentials = run_flow(flow, storage)
 
 gc = gspread.authorize(credentials)
 sh = None
