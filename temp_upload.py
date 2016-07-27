@@ -123,7 +123,7 @@ with sqlite3.connect(databasefile) as db:
     data = sql.fetchone()
     while data is not None:
         (sensorid, temperature, stamp) = data
-        stamp = stamp.split()[1]
+        #stamp = stamp.split()[1]
         if oldmeasurement[0] == stamp:
             measurement = oldmeasurement
             temperatures.pop()
