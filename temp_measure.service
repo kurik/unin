@@ -1,0 +1,14 @@
+[Unit]
+Description=Measure temperature
+#StopWhenUnneeded=yes
+
+[Service]
+Type=simple
+#Type=oneshot
+ExecStart=/home/temp_measure/bin/temp_measure.py -v -b /home/temp_measure/var/unin_temperature.db
+User=temp_measure
+Group=temp_measure
+Nice=19
+IOSchedulingClass=2
+IOSchedulingPriority=7
+WatchdogSec=5min

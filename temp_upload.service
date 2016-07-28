@@ -1,0 +1,13 @@
+[Unit]
+Description=Sends temperatures from database do Google spreadsheet
+#StopWhenUnneeded=yes
+
+[Service]
+Type=simple
+ExecStart=/home/temp_upload/bin/temp_upload.py -v -d 1B1uH_PGEsmY2UeA_LkbVL6zGwgxRNLAJZxFHR6XtGj4 -i /home/temp_upload/etc/temp_upload.json -s /home/temp_upload/etc/temp_upload -b /home/temp_measure/var/unin_temperature.db 28-000001b4337c 28-000001b4754f
+User=temp_upload
+Group=temp_upload
+Nice=19
+IOSchedulingClass=2
+IOSchedulingPriority=7
+WatchdogSec=15min
