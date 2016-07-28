@@ -42,12 +42,13 @@ else:
     loglevel = logging.DEBUG
 
 # Logging into a file
+format = '%(asctime)s %(levelname)s[%(module)s] %(message)s'
 if cmdline.logfile == "-":
-    logging.basicConfig(level = loglevel, format = '%(asctime)s %(message)s')
+    logging.basicConfig(level = loglevel, format = format)
 elif cmdline.logfile == ":":
     pass
 else:
-    logging.basicConfig(filename = cmdline.logfile, level = loglevel, format = '%(asctime)s %(message)s')
+    logging.basicConfig(filename = cmdline.logfile, level = loglevel, format = format)
 
 # Initialise emulation of sensors if needed
 if cmdline.nosensor:
