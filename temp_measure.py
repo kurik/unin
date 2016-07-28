@@ -42,7 +42,7 @@ else:
     loglevel = logging.DEBUG
 
 # Logging into a file
-format = '%(asctime)s %(levelname)s[%(module)s] %(message)s'
+format = '%(asctime)s %(message)s'
 if cmdline.logfile == "-":
     logging.basicConfig(level = loglevel, format = format)
 elif cmdline.logfile == ":":
