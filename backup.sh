@@ -12,8 +12,8 @@ if [[ -e "${DIR}/${DB}.${TSTAMP}" ]]; then
     :
 else
     # The backup file does not exists, create it
-    echo mv "${DIR}/${DB}" "${DIR}/${DB}.${TSTAMP}"
-    echo touch "${DIR}/${DB}"
-    echo chmod 0640 "${DIR}/${DB}"
-    echo chown ${USER}:${GROUP} "${DIR}/${DB}"
+    mv "${DIR}/${DB}" "${DIR}/${DB}.${TSTAMP}"
+    touch "${DIR}/${DB}"
+    chmod 0640 "${DIR}/${DB}"
+    chown ${USER}:${GROUP} "${DIR}/${DB}"
 fi
