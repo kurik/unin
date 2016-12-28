@@ -64,6 +64,8 @@ elif cmdline.logfile == ":":
 else:
     logging.basicConfig(filename = cmdline.logfile, level = loglevel, format = format)
 
+# Handle google library mess
+logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 
 class GAuth(object):
     def __init__(self, oauth2json = None, oauth2storage = None, scope = OAUTH2_SCOPE):
